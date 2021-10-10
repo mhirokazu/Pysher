@@ -4,7 +4,7 @@ from collections import defaultdict
 import websocket
 import logging
 import time
-import json
+import rapidjson
 
 
 class Connection(Thread):
@@ -178,7 +178,7 @@ class Connection(Thread):
 
     @staticmethod
     def _parse(message):
-        return json.loads(message)
+        return rapidjson.loads(message)
 
     def _stop_timers(self):
         for event in self.timeout_scheduler.queue:
@@ -217,14 +217,14 @@ class Connection(Thread):
 
         self.logger.info("Connection: Sending event - %s" % event)
         try:
-            self.socket.send(json.dumps(event))
+            self.socket.send(rapidjson.dumps(event))
         except Exception as e:
             self.logger.error("Failed send event: %s" % e)
 
     def send_ping(self):
         self.logger.info("Connection: ping to pusher")
         try:
-            self.socket.send(json.dumps({'event': 'pusher:ping', 'data': ''}))
+            self.socket.send(rapidjson.dumps({'event': 'pusher:ping', 'data': ''}))
         except Exception as e:
             self.logger.error("Failed send ping: %s" % e)
 
@@ -233,7 +233,7 @@ class Connection(Thread):
     def send_pong(self):
         self.logger.info("Connection: pong to pusher")
         try:
-            self.socket.send(json.dumps({'event': 'pusher:pong', 'data': ''}))
+            self.socket.send(rapidjson.dumps({'event': 'pusher:pong', 'data': ''}))
         except Exception as e:
             self.logger.error("Failed send pong: %s" % e)
 
@@ -248,7 +248,7 @@ class Connection(Thread):
             self.reconnect()
 
     def _connect_handler(self, data):
-        parsed = json.loads(data)
+        parsed = rapidjson.loads(data)
         self.socket_id = parsed['socket_id']
         self.state = "connected"
 
