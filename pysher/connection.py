@@ -125,7 +125,7 @@ class Connection(Thread):
             self.socket.keep_running = True
             self.socket.run_forever(**self.socket_kwargs)
 
-    def _on_open(self, *args):
+    def _on_open(self, ws, *args):
         self.logger.info("Connection: Connection opened")
 
         # Send a ping right away to inform that the connection is alive. If you
@@ -134,12 +134,12 @@ class Connection(Thread):
         self.send_ping()
         self._start_timers()
 
-    def _on_error(self, *args):
+    def _on_error(self, ws, *args):
         self.logger.info("Connection: Error - %s" % args[-1])
         self.state = "failed"
         self.needs_reconnect = True
 
-    def _on_message(self, *args):
+    def _on_message(self, ws, *args):
         message = args[-1]
         self.logger.info("Connection: Message - %s" % message)
 
@@ -171,7 +171,7 @@ class Connection(Thread):
         # We've handled our data, so restart our connection timeout handler
         self._start_timers()
 
-    def _on_close(self, *args):
+    def _on_close(self, ws, *args):
         self.logger.info("Connection: Connection closed")
         self.state = "disconnected"
         self._stop_timers()
