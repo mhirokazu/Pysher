@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import logging
 import json
+import ssl
 
 VERSION = '0.6.0'
 
@@ -64,8 +65,10 @@ class Pusher(object):
                                                         http_proxy_port=http_proxy_port,
                                                         http_no_proxy=http_no_proxy,
                                                         http_proxy_auth=http_proxy_auth,
-                                                        ping_timeout=100),
+                                                        ping_timeout=100,
+                                                        sslopt={"cert_reqs": ssl.CERT_NONE}),
                                      **thread_kwargs)
+        self.connection.bind('pusher:subscription_succeeded', self._subscription_handler)
 
     @property
     def key_as_bytes(self):
@@ -184,3 +187,10 @@ class Pusher(object):
             port = 443 if secure else 80
 
         return "{}://{}:{}{}".format(proto, host, port, path)
+
+    def _subscription_handler(self, data):
+        if 'channel' in data:
+            channel_name = data['channel']
+            if channel_name in self.channels:
+                self.channels[channel_name].subscribed = True
+

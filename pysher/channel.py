@@ -11,6 +11,8 @@ class Channel(object):
 
         self.auth = auth
 
+        self.subscribed = False
+
     def bind(self, event_name, callback, *args, **kwargs):
         """Bind an event to a callback
 
