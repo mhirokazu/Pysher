@@ -87,7 +87,7 @@ class Pusher(object):
         self.connection.disconnect(timeout)
         self.channels = {}
 
-    def subscribe(self, channel_name, auth=None):
+    def subscribe(self, channel_name, auth=None) -> Channel:
         """Subscribe to a channel.
 
         :param str channel_name: The name of the channel to subscribe to.
@@ -106,9 +106,9 @@ class Pusher(object):
 
         self.connection.send_event('pusher:subscribe', data)
 
-        self.channels[channel_name] = Channel(channel_name, self.connection)
-
-        return self.channels[channel_name]
+        channel = Channel(channel_name, self.connection)
+        self.channels[channel_name] = channel
+        return channel
 
     def unsubscribe(self, channel_name):
         """Unsubscribe from a channel
@@ -123,7 +123,7 @@ class Pusher(object):
             )
             del self.channels[channel_name]
 
-    def channel(self, channel_name):
+    def channel(self, channel_name) -> Channel:
         """Get an existing channel object by name
 
         :param str channel_name: The name of the channel you want to retrieve
