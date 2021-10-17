@@ -42,8 +42,8 @@ class Connection(Thread):
 
         if log_level:
             self.logger.setLevel(log_level)
-            if log_level == logging.DEBUG:
-                websocket.enableTrace(True)
+        if self.logger.level == logging.DEBUG:
+            websocket.enableTrace(True)
 
         # From Martyn's comment at:
         # https://pusher.tenderapp.com/discussions/problems/36-no-messages-received-after-1-idle-minute-heartbeat
@@ -135,13 +135,13 @@ class Connection(Thread):
         self._start_timers()
 
     def _on_error(self, ws, *args):
-        self.logger.info("Connection: Error - %s" % args[-1])
+        self.logger.warn("Connection: Error - %s" % args[-1])
         self.state = "failed"
         self.needs_reconnect = True
 
     def _on_message(self, ws, *args):
         message = args[-1]
-        self.logger.info("Connection: Message - %s" % message)
+        self.logger.debug("Connection: Message - %s" % message)
 
         # Stop our timeout timer, since we got some data
         self._stop_timers()
@@ -215,7 +215,7 @@ class Connection(Thread):
         if channel_name:
             event['channel'] = channel_name
 
-        self.logger.info("Connection: Sending event - %s" % event)
+        self.logger.info("Connection: Sending event - %s" % rapidjson.dumps(event))
         try:
             self.socket.send(rapidjson.dumps(event))
         except Exception as e:
@@ -243,7 +243,7 @@ class Connection(Thread):
         if self.pong_received:
             self.pong_received = False
         else:
-            self.logger.info("Did not receive pong in time.  Will attempt to reconnect.")
+            self.logger.warn("Did not receive pong in time.  Will attempt to reconnect.")
             self.state = "failed"
             self.reconnect()
 
@@ -264,6 +264,7 @@ class Connection(Thread):
             self.logger.debug('Connection: Establisheds first connection')
 
     def _failed_handler(self, data):
+        self.logger.warn('Connection: Establisheds failed')
         self.state = "failed"
 
     def _ping_handler(self, data):
@@ -304,7 +305,7 @@ class Connection(Thread):
             self.logger.error("Connection: No error code supplied")
 
     def _connection_timed_out(self):
-        self.logger.info("Did not receive any data in time.  Reconnecting.")
+        self.logger.warn("Did not receive any data in time.  Reconnecting.")
         self.state = "failed"
         self.reconnect()
 

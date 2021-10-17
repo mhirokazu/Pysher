@@ -14,7 +14,7 @@ class Pusher(object):
     client_id = "Pysher"
     protocol = 6
 
-    def __init__(self, key, cluster="", secure=True, secret="", user_data=None, log_level=logging.INFO,
+    def __init__(self, key, cluster="", secure=True, secret="", user_data=None, log_level=None,
                  daemon=True, port=443, reconnect_interval=10, custom_host="", auto_sub=False,
                  http_proxy_host="", http_proxy_port=0, http_no_proxy=None, http_proxy_auth=None,
                  **thread_kwargs):
@@ -192,5 +192,5 @@ class Pusher(object):
         if 'channel' in data:
             channel_name = data['channel']
             if channel_name in self.channels:
+                self.connection.logger.info(f"Connection: Channel:{channel_name} subscribed")
                 self.channels[channel_name].subscribed = True
-
